@@ -1,0 +1,12 @@
+{
+  "name": "asif-store",
+  "version": "1.0.0",
+  "description": "Asif Store",
+  "main": "Server.js",
+  "scripts": {
+    "deploy": "wrangler deploy"
+  },
+  "devDependencies": {
+    "wrangler": "latest"
+  }
+}

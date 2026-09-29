@@ -1,0 +1,11 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "asifstore",
+  "main": "./Server.js",
+  "compatibility_date": "2026-09-28",
+
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS"
+  }
+}
