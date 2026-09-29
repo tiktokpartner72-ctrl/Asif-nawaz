@@ -7,5 +7,13 @@
   "assets": {
     "directory": "./public",
     "binding": "ASSETS"
-  }
+  },
+
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "asif-store-db",
+      "database_id": "0000000e-00000003-000050f5-650b89c0d785a99b97ca7449728340d9"
+    }
+  ]
 }
