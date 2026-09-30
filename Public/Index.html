@@ -197,6 +197,18 @@ body {
     background: #e8ffe8;
     border-radius: 10px;
 }
+
+.error-box {
+    margin-top: 20px;
+    padding: 15px;
+    background: #ffe8e8;
+    border-radius: 10px;
+}
+
+.loading {
+    opacity: 0.7;
+    pointer-events: none;
+}
 </style>
 </head>
 
@@ -301,6 +313,7 @@ body {
 
             <button
                 type="submit"
+                id="placeOrderButton"
                 class="checkout-btn">
 
                 Place Order
@@ -402,9 +415,6 @@ function addToCart(id) {
     cart.push(product);
 
     updateCart();
-
-    // Popup hata diya gaya hai.
-    // Ab product directly cart mein add hoga.
 
 }
 
@@ -511,11 +521,23 @@ function closeCheckout() {
 }
 
 
+/* =========================
+   SAVE ORDER TO D1 DATABASE
+========================= */
+
 document
     .getElementById("checkoutForm")
-    .addEventListener("submit", function(event) {
+    .addEventListener("submit", async function(event) {
 
         event.preventDefault();
+
+        if (cart.length === 0) {
+
+            alert("Cart is empty");
+
+            return;
+
+        }
 
         const name =
             document.getElementById("customerName").value.trim();
@@ -534,47 +556,137 @@ document
 
         });
 
-        const orderNumber =
-            "ASIF-" + Date.now();
 
-        document.getElementById("orderSuccess").innerHTML = `
+        const button =
+            document.getElementById("placeOrderButton");
 
-            <div class="success-box">
+        const successBox =
+            document.getElementById("orderSuccess");
 
-                <h3>✅ Order Placed!</h3>
 
-                <p>
-                    <b>Order:</b> ${orderNumber}
-                </p>
+        button.innerText = "Saving Order...";
 
-                <p>
-                    <b>Name:</b> ${name}
-                </p>
+        button.disabled = true;
 
-                <p>
-                    <b>Phone:</b> ${phone}
-                </p>
+        successBox.innerHTML = "";
 
-                <p>
-                    <b>Address:</b> ${address}
-                </p>
 
-                <p>
-                    <b>Total:</b> Rs. ${total}
-                </p>
+        try {
 
-                <p>
-                    Thank you for shopping with Asif Store.
-                </p>
+            const response = await fetch("/api/order", {
 
-            </div>
-        `;
+                method: "POST",
 
-        cart = [];
+                headers: {
+                    "Content-Type": "application/json"
+                },
 
-        updateCart();
+                body: JSON.stringify({
 
-        document.getElementById("checkoutForm").reset();
+                    name: name,
+
+                    phone: phone,
+
+                    address: address,
+
+                    items: cart,
+
+                    total: total
+
+                })
+
+            });
+
+
+            const result = await response.json();
+
+
+            if (!response.ok || !result.success) {
+
+                throw new Error(
+                    result.message || "Order could not be saved."
+                );
+
+            }
+
+
+            successBox.innerHTML = `
+
+                <div class="success-box">
+
+                    <h3>✅ Order Placed Successfully!</h3>
+
+                    <p>
+                        <b>Order:</b>
+                        ${result.orderNumber}
+                    </p>
+
+                    <p>
+                        <b>Name:</b>
+                        ${name}
+                    </p>
+
+                    <p>
+                        <b>Phone:</b>
+                        ${phone}
+                    </p>
+
+                    <p>
+                        <b>Total:</b>
+                        Rs. ${total}
+                    </p>
+
+                    <p>
+                        Your order has been saved.
+                    </p>
+
+                    <p>
+                        Thank you for shopping with Asif Store.
+                    </p>
+
+                </div>
+
+            `;
+
+
+            cart = [];
+
+            updateCart();
+
+            document
+                .getElementById("checkoutForm")
+                .reset();
+
+
+        } catch (error) {
+
+            console.error(error);
+
+            successBox.innerHTML = `
+
+                <div class="error-box">
+
+                    <h3>❌ Order Save Failed</h3>
+
+                    <p>
+                        ${error.message}
+                    </p>
+
+                    <p>
+                        Please try again.
+                    </p>
+
+                </div>
+
+            `;
+
+        } finally {
+
+            button.innerText = "Place Order";
+
+            button.disabled = false;
+
+        }
 
     });
 
