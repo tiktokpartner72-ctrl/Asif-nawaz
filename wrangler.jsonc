@@ -6,14 +6,7 @@
 
   "assets": {
     "directory": ".",
-    "binding": "ASSETS",
-    "exclude": [
-      "node_modules/**",
-      ".git/**",
-      "*.json",
-      "*.jsonc",
-      "Server.js"
-    ]
+    "binding": "ASSETS"
   },
 
   "d1_databases": [
