@@ -106,7 +106,38 @@ export default {
     });
   }
     }
+// Get all orders for Admin Panel
+if (url.pathname === "/api/orders" && request.method === "GET") {
+  try {
+    const result = await env.DB.prepare(`
+      SELECT
+        id,
+        order_number,
+        customer_name,
+        customer_phone,
+        customer_address,
+        items,
+        total,
+        created_at
+      FROM orders
+      ORDER BY id DESC
+    `).all();
 
+    return Response.json({
+      success: true,
+      orders: result.results || []
+    });
+
+  } catch (error) {
+    return Response.json(
+      {
+        success: false,
+        error: error.message
+      },
+      { status: 500 }
+    );
+  }
+}
     // Create customer order
     if (url.pathname === "/api/order" && request.method === "POST") {
       try {
