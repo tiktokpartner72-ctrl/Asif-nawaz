@@ -2,9 +2,7 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
-    // =========================
-    // BACKEND TEST
-    // =========================
+    // Backend test
     if (url.pathname === "/api/test") {
       return Response.json({
         success: true,
@@ -12,9 +10,7 @@ export default {
       });
     }
 
-    // =========================
-    // DATABASE READ TEST
-    // =========================
+    // Database read test
     if (url.pathname === "/api/db-test") {
       try {
         const result = await env.DB.prepare(
@@ -37,9 +33,7 @@ export default {
       }
     }
 
-    // =========================
-    // DIRECT DATABASE WRITE TEST
-    // =========================
+    // Direct D1 write test
     if (url.pathname === "/api/db-write-test") {
       try {
         const orderNumber = "TEST-" + Date.now();
@@ -85,9 +79,7 @@ export default {
       }
     }
 
-    // =========================
-    // CREATE CUSTOMER ORDER
-    // =========================
+    // Create customer order
     if (url.pathname === "/api/order" && request.method === "POST") {
       try {
         const data = await request.json();
@@ -133,9 +125,6 @@ export default {
       }
     }
 
-    // =========================
-    // DEFAULT RESPONSE
-    // =========================
     return Response.json({
       success: true,
       message: "Asif Store Backend is working!"
