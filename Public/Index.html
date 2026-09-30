@@ -7,7 +7,6 @@
 <title>Asif Store</title>
 
 <style>
-
 * {
     box-sizing: border-box;
     margin: 0;
@@ -40,6 +39,7 @@ body {
     border: none;
     padding: 10px 15px;
     border-radius: 8px;
+    cursor: pointer;
 }
 
 .hero {
@@ -62,6 +62,7 @@ body {
     padding: 13px 25px;
     border: none;
     border-radius: 8px;
+    cursor: pointer;
 }
 
 .products-section {
@@ -109,6 +110,13 @@ body {
     color: white;
     border: none;
     border-radius: 7px;
+    cursor: pointer;
+}
+
+.add-btn:active,
+.checkout-btn:active,
+.cart-btn:active {
+    transform: scale(0.98);
 }
 
 .modal {
@@ -118,6 +126,7 @@ body {
     background: #0008;
     padding: 20px;
     overflow-y: auto;
+    z-index: 1000;
 }
 
 .cart-box {
@@ -133,13 +142,22 @@ body {
     border: none;
     background: none;
     font-size: 22px;
+    cursor: pointer;
 }
 
 .cart-item {
     display: flex;
     justify-content: space-between;
+    gap: 10px;
     padding: 12px 0;
     border-bottom: 1px solid #ddd;
+}
+
+.remove-btn {
+    border: none;
+    background: none;
+    cursor: pointer;
+    margin-left: 8px;
 }
 
 .checkout-btn {
@@ -150,6 +168,7 @@ body {
     border: none;
     border-radius: 8px;
     margin-top: 15px;
+    cursor: pointer;
 }
 
 #checkoutForm input,
@@ -166,6 +185,18 @@ body {
     height: 100px;
 }
 
+.empty-cart {
+    padding: 20px 0;
+    text-align: center;
+    color: #666;
+}
+
+.success-box {
+    margin-top: 20px;
+    padding: 15px;
+    background: #e8ffe8;
+    border-radius: 10px;
+}
 </style>
 </head>
 
@@ -178,21 +209,16 @@ body {
     </div>
 
     <button class="cart-btn" onclick="openCart()">
-        🛒 Cart <span id="cartCount">0</span>
+        🛒 Cart (<span id="cartCount">0</span>)
     </button>
 
 </header>
 
-
 <section class="hero">
 
-    <h1>
-        Welcome to Asif Store
-    </h1>
+    <h1>Welcome to Asif Store</h1>
 
-    <p>
-        Shop your favourite products online
-    </p>
+    <p>Shop your favourite products online</p>
 
     <button onclick="scrollToProducts()">
         Shop Now
@@ -200,12 +226,9 @@ body {
 
 </section>
 
-
 <section class="products-section" id="productsSection">
 
-    <h2>
-        Our Products
-    </h2>
+    <h2>Our Products</h2>
 
     <div id="products" class="products"></div>
 
@@ -218,22 +241,18 @@ body {
 
     <div class="cart-box">
 
-        <button class="close" onclick="closeCart()">
-            ✕
-        </button>
+        <button class="close" onclick="closeCart()">✕</button>
 
-        <h2>
-            Your Cart
-        </h2>
+        <h2>Your Cart</h2>
 
         <div id="cartItems"></div>
 
         <h3>
-            Total:
-            Rs. <span id="cartTotal">0</span>
+            Total: Rs. <span id="cartTotal">0</span>
         </h3>
 
         <button
+            id="checkoutButton"
             class="checkout-btn"
             onclick="checkout()">
 
@@ -252,17 +271,11 @@ body {
 
     <div class="cart-box">
 
-        <button
-            class="close"
-            onclick="closeCheckout()">
-
+        <button class="close" onclick="closeCheckout()">
             ✕
-
         </button>
 
-        <h2>
-            Checkout
-        </h2>
+        <h2>Checkout</h2>
 
         <form id="checkoutForm">
 
@@ -337,21 +350,18 @@ const products = [
 
 ];
 
-
 let cart = [];
 
 
 function showProducts() {
 
-    const container =
-        document.getElementById("products");
+    const container = document.getElementById("products");
 
     container.innerHTML = "";
 
     products.forEach(product => {
 
         container.innerHTML += `
-
             <div class="product">
 
                 <img
@@ -359,9 +369,7 @@ function showProducts() {
                     alt="${product.name}"
                 >
 
-                <h3>
-                    ${product.name}
-                </h3>
+                <h3>${product.name}</h3>
 
                 <div class="price">
                     Rs. ${product.price}
@@ -376,7 +384,6 @@ function showProducts() {
                 </button>
 
             </div>
-
         `;
 
     });
@@ -386,36 +393,47 @@ function showProducts() {
 
 function addToCart(id) {
 
-    const product =
-        products.find(p => p.id === id);
+    const product = products.find(p => p.id === id);
+
+    if (!product) {
+        return;
+    }
 
     cart.push(product);
 
     updateCart();
 
-    alert("Product added to cart");
+    // Popup hata diya gaya hai.
+    // Ab product directly cart mein add hoga.
 
 }
 
 
 function updateCart() {
 
-    document.getElementById("cartCount").innerText =
-        cart.length;
+    document.getElementById("cartCount").innerText = cart.length;
 
-    const items =
-        document.getElementById("cartItems");
+    const items = document.getElementById("cartItems");
 
     items.innerHTML = "";
 
     let total = 0;
+
+    if (cart.length === 0) {
+
+        items.innerHTML = `
+            <div class="empty-cart">
+                Your cart is empty.
+            </div>
+        `;
+
+    }
 
     cart.forEach((item, index) => {
 
         total += item.price;
 
         items.innerHTML += `
-
             <div class="cart-item">
 
                 <span>
@@ -423,26 +441,23 @@ function updateCart() {
                 </span>
 
                 <span>
-
                     Rs. ${item.price}
 
                     <button
+                        class="remove-btn"
                         onclick="removeItem(${index})">
 
                         ❌
 
                     </button>
-
                 </span>
 
             </div>
-
         `;
 
     });
 
-    document.getElementById("cartTotal").innerText =
-        total;
+    document.getElementById("cartTotal").innerText = total;
 
 }
 
@@ -458,8 +473,7 @@ function removeItem(index) {
 
 function openCart() {
 
-    document.getElementById("cartModal").style.display =
-        "block";
+    document.getElementById("cartModal").style.display = "block";
 
     updateCart();
 
@@ -468,8 +482,7 @@ function openCart() {
 
 function closeCart() {
 
-    document.getElementById("cartModal").style.display =
-        "none";
+    document.getElementById("cartModal").style.display = "none";
 
 }
 
@@ -486,16 +499,14 @@ function checkout() {
 
     closeCart();
 
-    document.getElementById("checkoutModal").style.display =
-        "block";
+    document.getElementById("checkoutModal").style.display = "block";
 
 }
 
 
 function closeCheckout() {
 
-    document.getElementById("checkoutModal").style.display =
-        "none";
+    document.getElementById("checkoutModal").style.display = "none";
 
 }
 
@@ -507,13 +518,13 @@ document
         event.preventDefault();
 
         const name =
-            document.getElementById("customerName").value;
+            document.getElementById("customerName").value.trim();
 
         const phone =
-            document.getElementById("customerPhone").value;
+            document.getElementById("customerPhone").value.trim();
 
         const address =
-            document.getElementById("customerAddress").value;
+            document.getElementById("customerAddress").value.trim();
 
         let total = 0;
 
@@ -528,42 +539,28 @@ document
 
         document.getElementById("orderSuccess").innerHTML = `
 
-            <div
-                style="
-                margin-top:20px;
-                padding:15px;
-                background:#e8ffe8;
-                border-radius:10px;
-                "
-            >
+            <div class="success-box">
 
-                <h3>
-                    ✅ Order Placed!
-                </h3>
+                <h3>✅ Order Placed!</h3>
 
                 <p>
-                    <b>Order:</b>
-                    ${orderNumber}
+                    <b>Order:</b> ${orderNumber}
                 </p>
 
                 <p>
-                    <b>Name:</b>
-                    ${name}
+                    <b>Name:</b> ${name}
                 </p>
 
                 <p>
-                    <b>Phone:</b>
-                    ${phone}
+                    <b>Phone:</b> ${phone}
                 </p>
 
                 <p>
-                    <b>Address:</b>
-                    ${address}
+                    <b>Address:</b> ${address}
                 </p>
 
                 <p>
-                    <b>Total:</b>
-                    Rs. ${total}
+                    <b>Total:</b> Rs. ${total}
                 </p>
 
                 <p>
@@ -571,18 +568,15 @@ document
                 </p>
 
             </div>
-
         `;
 
         cart = [];
 
         updateCart();
 
-        document
-            .getElementById("checkoutForm")
-            .reset();
+        document.getElementById("checkoutForm").reset();
 
-});
+    });
 
 
 function scrollToProducts() {
