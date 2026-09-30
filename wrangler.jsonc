@@ -1,12 +1,19 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "asifstore",
+  "name": "asif-store",
   "main": "./Server.js",
   "compatibility_date": "2026-09-28",
 
   "assets": {
-    "directory": "."
-    "binding": "ASSETS"
+    "directory": ".",
+    "binding": "ASSETS",
+    "exclude": [
+      "node_modules/**",
+      ".git/**",
+      "*.json",
+      "*.jsonc",
+      "Server.js"
+    ]
   },
 
   "d1_databases": [
