@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Asif Store - Admin Orders</title>
+
+<style>
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+}
+
+body {
+  background: #f4f6f8;
+  color: #222;
+}
+
+header {
+  background: #111827;
+  color: white;
+  padding: 18px;
+  text-align: center;
+}
+
+header h1 {
+  font-size: 24px;
+}
+
+.container {
+  max-width: 1100px;
+  margin: 20px auto;
+  padding: 15px;
+}
+
+.summary {
+  background: white;
+  padding: 18px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+}
+
+.summary h2 {
+  font-size: 20px;
+}
+
+.orders {
+  display: grid;
+  gap: 15px;
+}
+
+.order {
+  background: white;
+  border-radius: 12px;
+  padding: 18px;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+}
+
+.order h3 {
+  margin-bottom: 12px;
+}
+
+.order p {
+  margin: 7px 0;
+  line-height: 1.4;
+}
+
+.total {
+  font-size: 20px;
+  font-weight: bold;
+  margin-top: 12px;
+}
+
+.status {
+  display: inline-block;
+  background: #16a34a;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  margin-top: 10px;
+}
+
+.loading,
+.error,
+.empty {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.error {
+  color: #dc2626;
+}
+
+.refresh {
+  margin-top: 12px;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 8px;
+  background: #2563eb;
+  color: white;
+  cursor: pointer;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>ASIF STORE</h1>
+  <p>Admin Orders Panel</p>
+</header>
+
+<div class="container">
+
+  <div class="summary">
+    <h2>Total Orders: <span id="totalOrders">0</span></h2>
+
+    <button class="refresh" onclick="loadOrders()">
+      Refresh Orders
+    </button>
+  </div>
+
+  <div id="orders" class="orders">
+    <div class="loading">
+      Loading orders...
+    </div>
+  </div>
+
+</div>
+
+<script>
+
+async function loadOrders() {
+
+  const ordersBox = document.getElementById("orders");
+
+  ordersBox.innerHTML = `
+    <div class="loading">
+      Loading orders...
+    </div>
+  `;
+
+  try {
+
+    const response = await fetch("/api/orders");
+
+    const data = await response.json();
+
+    if (!data.success) {
+      throw new Error(data.error || "Unable to load orders");
+    }
+
+    document.getElementById("totalOrders").textContent =
+      data.orders.length;
+
+    if (data.orders.length === 0) {
+
+      ordersBox.innerHTML = `
+        <div class="empty">
+          No orders found.
+        </div>
+      `;
+
+      return;
+    }
+
+    ordersBox.innerHTML = data.orders.map(order => `
+
+      <div class="order">
+
+        <h3>Order: ${escapeHtml(order.order_number)}</h3>
+
+        <p>
+          <strong>Name:</strong>
+          ${escapeHtml(order.customer_name)}
+        </p>
+
+        <p>
+          <strong>Phone:</strong>
+          ${escapeHtml(order.customer_phone)}
+        </p>
+
+        <p>
+          <strong>Address:</strong>
+          ${escapeHtml(order.customer_address)}
+        </p>
+
+        <p>
+          <strong>Date:</strong>
+          ${escapeHtml(order.created_at)}
+        </p>
+
+        <p class="total">
+          Total: Rs. ${Number(order.total).toLocaleString()}
+        </p>
+
+        <span class="status">
+          New Order
+        </span>
+
+      </div>
+
+    `).join("");
+
+  } catch (error) {
+
+    ordersBox.innerHTML = `
+      <div class="error">
+        Error: ${escapeHtml(error.message)}
+      </div>
+    `;
+
+  }
+}
+
+function escapeHtml(value) {
+
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+
+}
+
+loadOrders();
+
+</script>
+
+</body>
+</html>
