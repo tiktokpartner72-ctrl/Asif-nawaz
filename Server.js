@@ -2,7 +2,9 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
-    // Backend test
+    // =========================
+    // BACKEND TEST
+    // =========================
     if (url.pathname === "/api/test") {
       return Response.json({
         success: true,
@@ -10,7 +12,9 @@ export default {
       });
     }
 
-    // Database test
+    // =========================
+    // DATABASE READ TEST
+    // =========================
     if (url.pathname === "/api/db-test") {
       try {
         const result = await env.DB.prepare(
@@ -33,7 +37,57 @@ export default {
       }
     }
 
-    // Create order
+    // =========================
+    // DIRECT DATABASE WRITE TEST
+    // =========================
+    if (url.pathname === "/api/db-write-test") {
+      try {
+        const orderNumber = "TEST-" + Date.now();
+
+        const result = await env.DB.prepare(`
+          INSERT INTO orders
+          (
+            order_number,
+            customer_name,
+            customer_phone,
+            customer_address,
+            items,
+            total
+          )
+          VALUES (?, ?, ?, ?, ?, ?)
+        `)
+          .bind(
+            orderNumber,
+            "Test Customer",
+            "0000",
+            "Test Address",
+            "[]",
+            1
+          )
+          .run();
+
+        return Response.json({
+          success: true,
+          message: "D1 write successful!",
+          database: "asif-store-db",
+          orderNumber: orderNumber,
+          changes: result.meta?.changes ?? 0
+        });
+      } catch (error) {
+        return Response.json(
+          {
+            success: false,
+            message: "D1 write failed",
+            error: error.message
+          },
+          { status: 500 }
+        );
+      }
+    }
+
+    // =========================
+    // CREATE CUSTOMER ORDER
+    // =========================
     if (url.pathname === "/api/order" && request.method === "POST") {
       try {
         const data = await request.json();
@@ -42,7 +96,14 @@ export default {
 
         await env.DB.prepare(`
           INSERT INTO orders
-          (order_number, customer_name, customer_phone, customer_address, items, total)
+          (
+            order_number,
+            customer_name,
+            customer_phone,
+            customer_address,
+            items,
+            total
+          )
           VALUES (?, ?, ?, ?, ?, ?)
         `)
           .bind(
@@ -57,7 +118,7 @@ export default {
 
         return Response.json({
           success: true,
-          orderNumber,
+          orderNumber: orderNumber,
           message: "Order saved successfully!"
         });
       } catch (error) {
@@ -72,6 +133,9 @@ export default {
       }
     }
 
+    // =========================
+    // DEFAULT RESPONSE
+    // =========================
     return Response.json({
       success: true,
       message: "Asif Store Backend is working!"
