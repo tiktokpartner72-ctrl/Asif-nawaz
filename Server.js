@@ -77,6 +77,34 @@ export default {
           { status: 500 }
         );
       }
+    }if (url.pathname === "/api/db-write-test") {
+  try {
+    const result = await env.DB.prepare(`
+      INSERT INTO orders
+      (order_number, customer_name, customer_phone, customer_address, items, total)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `)
+      .bind(
+        "TEST-" + Date.now(),
+        "Test Customer",
+        "0000",
+        "Test Address",
+        "[]",
+        1
+      )
+      .run();
+
+    return Response.json({
+      success: true,
+      message: "D1 write successful!",
+      changes: result.meta?.changes ?? 0
+    });
+  } catch (error) {
+    return Response.json({
+      success: false,
+      error: error.message
+    });
+  }
     }
 
     // Create customer order
