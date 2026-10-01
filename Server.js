@@ -932,16 +932,14 @@ export default {
         }, 500);
       }
     }
-
     // ================================
     // ADMIN DASHBOARD
     // ================================
 
-        if (
+    if (
       url.pathname === "/api/admin/dashboard" &&
       request.method === "GET"
-    ) 
-        {  
+    ) {
       if (!(await requireAdmin())) {
         return json({
           success: false,
@@ -976,16 +974,14 @@ export default {
 
         const sales =
           await env.DB.prepare(`
-            SELECT
-              COALESCE(SUM(total), 0) AS total
+            SELECT COALESCE(SUM(total), 0) AS total
             FROM orders
             WHERE status != 'Cancelled'
           `).first();
 
         const todaySales =
           await env.DB.prepare(`
-            SELECT
-              COALESCE(SUM(total), 0) AS total
+            SELECT COALESCE(SUM(total), 0) AS total
             FROM orders
             WHERE status != 'Cancelled'
             AND date(created_at) = date('now')
@@ -1003,9 +999,20 @@ export default {
         });
 
       } catch (error) {
-
         return json({
           success: false,
+          error: "Dashboard data unavailable"
+        }, 500);
+      }
+    }
+
+    return json({
+      success: true,
+      message: "Asif Store Backend is working!"
+    });
+  }
+};
+success: false,
           error: "Dashboard data unavailable"
         }, 500);
 
