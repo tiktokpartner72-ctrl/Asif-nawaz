@@ -3,17 +3,15 @@
   "name": "asif-nawaz",
   "main": "./Server.js",
   "compatibility_date": "2026-09-28",
-
   "assets": {
     "directory": ".",
     "binding": "ASSETS"
   },
-
   "d1_databases": [
     {
       "binding": "DB",
       "database_name": "asif-store-db",
-      "database_id": "0000001f-00000000-000050f7-f579c0357e679849e6bdc754c597aa2f"
+      "database_id": "390e8097-6d15-436f-9811-056a205b1f0d"
     }
   ]
 }
