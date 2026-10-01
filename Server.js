@@ -1011,3 +1011,12 @@ export default {
 
       }
         }
+      }
+    }
+ 
+return json({
+      success: true,
+      message: "Asif Store Backend is working!"
+    });
+  }
+};
