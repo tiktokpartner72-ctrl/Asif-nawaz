@@ -1,19 +1,26 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "asif-store",
+  "name": "asifstore",
   "main": "./Server.js",
   "compatibility_date": "2026-09-28",
 
   "assets": {
     "directory": ".",
-    "binding": "ASSETS"
+    "binding": "ASSETS",
+    "exclude": [
+      "node_modules/**",
+      ".git/**",
+      "*.json",
+      "*.jsonc",
+      "Server.js"
+    ]
   },
 
   "d1_databases": [
     {
       "binding": "DB",
       "database_name": "asif-store-db",
-      "database_id": "390e8097-6d15-436f-9811-056a205b1f0d"
+      "database_id": "0000000e-00000003-000050f5-650b89c0d785a99b97ca7449728340d9"
     }
   ]
 }
