@@ -940,7 +940,8 @@ export default {
         if (
       url.pathname === "/api/admin/dashboard" &&
       request.method === "GET"
-    ) {
+    ) 
+        {  
       if (!(await requireAdmin())) {
         return json({
           success: false,
