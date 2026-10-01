@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Asif Store - Admin Orders</title>
+<title>Asif Store - Admin Panel</title>
 
 <style>
 * {
@@ -15,56 +15,186 @@
 }
 
 body {
-  background: #f4f6f8;
-  color: #222;
+  background: #0b1120;
+  color: #111827;
 }
 
-header {
+/* LOGIN */
+
+#loginPage {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background:
+    radial-gradient(circle at top, #26344f, #0b1120 60%);
+}
+
+.login-box {
+  width: 100%;
+  max-width: 420px;
+  background: rgba(255,255,255,0.97);
+  padding: 30px;
+  border-radius: 22px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.35);
+}
+
+.login-logo {
+  text-align: center;
+  font-size: 30px;
+  font-weight: 900;
+  margin-bottom: 8px;
+}
+
+.login-sub {
+  text-align: center;
+  color: #64748b;
+  margin-bottom: 25px;
+}
+
+.input {
+  width: 100%;
+  padding: 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  margin-bottom: 12px;
+  font-size: 16px;
+}
+
+.primary-btn {
+  width: 100%;
+  padding: 14px;
+  border: 0;
+  border-radius: 10px;
   background: #111827;
   color: white;
-  padding: 18px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.primary-btn:hover {
+  background: #2563eb;
+}
+
+.login-error {
+  color: #dc2626;
+  margin-top: 12px;
   text-align: center;
 }
 
-header h1 {
-  font-size: 24px;
+/* ADMIN */
+
+#adminPage {
+  display: none;
+  min-height: 100vh;
+  background: #f1f5f9;
 }
 
-.container {
-  max-width: 1100px;
-  margin: 20px auto;
-  padding: 15px;
-}
-
-.summary {
-  background: white;
-  padding: 18px;
-  border-radius: 12px;
-  margin-bottom: 20px;
-  box-shadow: 0 3px 12px rgba(0,0,0,0.08);
-}
-
-.summary h2 {
-  font-size: 20px;
-}
-
-.orders {
-  display: grid;
+.header {
+  background: #111827;
+  color: white;
+  padding: 18px 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: 15px;
 }
 
-.order {
-  background: white;
-  border-radius: 12px;
-  padding: 18px;
-  box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+.logo {
+  font-size: 24px;
+  font-weight: 900;
 }
 
-.order h3 {
+.logout {
+  background: #dc2626;
+  color: white;
+  border: 0;
+  padding: 10px 15px;
+  border-radius: 9px;
+  cursor: pointer;
+}
+
+.container {
+  max-width: 1250px;
+  margin: auto;
+  padding: 20px;
+}
+
+/* STATS */
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 15px;
+  margin-bottom: 25px;
+}
+
+.stat {
+  background: white;
+  padding: 20px;
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(0,0,0,.07);
+}
+
+.stat-title {
+  color: #64748b;
+  font-size: 14px;
+}
+
+.stat-value {
+  font-size: 28px;
+  font-weight: 900;
+  margin-top: 8px;
+}
+
+/* TABS */
+
+.tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.tab {
+  border: 0;
+  padding: 11px 18px;
+  border-radius: 9px;
+  background: #e2e8f0;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.tab.active {
+  background: #111827;
+  color: white;
+}
+
+.section {
+  display: none;
+}
+
+.section.active {
+  display: block;
+}
+
+/* CARDS */
+
+.card {
+  background: white;
+  border-radius: 15px;
+  padding: 20px;
+  margin-bottom: 15px;
+  box-shadow: 0 4px 15px rgba(0,0,0,.07);
+}
+
+.card h3 {
   margin-bottom: 12px;
 }
 
-.order p {
+.card p {
   margin: 7px 0;
   line-height: 1.4;
 }
@@ -75,21 +205,104 @@ header h1 {
   margin-top: 12px;
 }
 
-.status {
-  display: inline-block;
-  background: #16a34a;
-  color: white;
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 13px;
-  margin-top: 10px;
+/* ORDER */
+
+.order-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 15px;
 }
 
-.loading,
-.error,
-.empty {
+.status-select {
+  padding: 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+}
+
+.small-btn {
+  padding: 10px 14px;
+  border: 0;
+  border-radius: 8px;
+  background: #2563eb;
+  color: white;
+  cursor: pointer;
+}
+
+.delete-btn {
+  background: #dc2626;
+}
+
+/* PRODUCTS */
+
+.product-form {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.product-form textarea {
+  grid-column: 1 / -1;
+  min-height: 90px;
+}
+
+.product-form button {
+  grid-column: 1 / -1;
+}
+
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+}
+
+.product-card {
   background: white;
-  padding: 20px;
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0,0,0,.07);
+}
+
+.product-card img {
+  width: 100%;
+  height: 220px;
+  object-fit: contain;
+  background: #f8fafc;
+  padding: 15px;
+}
+
+.product-info {
+  padding: 15px;
+}
+
+.product-info h3 {
+  margin-bottom: 8px;
+}
+
+.product-price {
+  font-size: 19px;
+  font-weight: bold;
+  margin: 8px 0;
+}
+
+.product-buttons {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.product-buttons button {
+  flex: 1;
+}
+
+/* GENERAL */
+
+.loading,
+.empty,
+.error {
+  background: white;
+  padding: 25px;
   border-radius: 12px;
   text-align: center;
 }
@@ -98,50 +311,518 @@ header h1 {
   color: #dc2626;
 }
 
+.success {
+  color: #15803d;
+  margin-top: 10px;
+}
+
 .refresh {
-  margin-top: 12px;
-  padding: 10px 18px;
-  border: none;
-  border-radius: 8px;
-  background: #2563eb;
-  color: white;
-  cursor: pointer;
+  margin-bottom: 15px;
+}
+
+/* MOBILE */
+
+@media (max-width: 900px) {
+  .stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .products-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .header {
+    padding: 15px;
+  }
+
+  .container {
+    padding: 12px;
+  }
+
+  .stats {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .product-form {
+    grid-template-columns: 1fr;
+  }
+
+  .products-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .logo {
+    font-size: 20px;
+  }
 }
 </style>
 </head>
 
 <body>
 
-<header>
-  <h1>ASIF STORE</h1>
-  <p>Admin Orders Panel</p>
-</header>
+<!-- LOGIN -->
 
-<div class="container">
+<div id="loginPage">
 
-  <div class="summary">
-    <h2>Total Orders: <span id="totalOrders">0</span></h2>
+  <div class="login-box">
 
-    <button class="refresh" onclick="loadOrders()">
-      Refresh Orders
-    </button>
-  </div>
-
-  <div id="orders" class="orders">
-    <div class="loading">
-      Loading orders...
+    <div class="login-logo">
+      ASIF STORE
     </div>
+
+    <div class="login-sub">
+      Secure Admin Panel
+    </div>
+
+    <form id="loginForm">
+
+      <input
+        class="input"
+        id="username"
+        type="text"
+        placeholder="Username"
+        value="admin"
+        required
+      >
+
+      <input
+        class="input"
+        id="password"
+        type="password"
+        placeholder="Password"
+        required
+      >
+
+      <button class="primary-btn" type="submit">
+        Login
+      </button>
+
+    </form>
+
+    <div id="loginError" class="login-error"></div>
+
   </div>
 
 </div>
 
+
+<!-- ADMIN -->
+
+<div id="adminPage">
+
+  <header class="header">
+
+    <div>
+      <div class="logo">ASIF STORE</div>
+      <div>Admin Dashboard</div>
+    </div>
+
+    <button class="logout" onclick="logout()">
+      Logout
+    </button>
+
+  </header>
+
+
+  <main class="container">
+
+    <!-- STATS -->
+
+    <div class="stats">
+
+      <div class="stat">
+        <div class="stat-title">Products</div>
+        <div class="stat-value" id="statProducts">0</div>
+      </div>
+
+      <div class="stat">
+        <div class="stat-title">Total Orders</div>
+        <div class="stat-value" id="statOrders">0</div>
+      </div>
+
+      <div class="stat">
+        <div class="stat-title">Pending</div>
+        <div class="stat-value" id="statPending">0</div>
+      </div>
+
+      <div class="stat">
+        <div class="stat-title">Total Sales</div>
+        <div class="stat-value" id="statSales">Rs. 0</div>
+      </div>
+
+      <div class="stat">
+        <div class="stat-title">Today's Sales</div>
+        <div class="stat-value" id="statToday">Rs. 0</div>
+      </div>
+
+    </div>
+
+
+    <!-- TABS -->
+
+    <div class="tabs">
+
+      <button
+        class="tab active"
+        onclick="showTab('dashboard', this)">
+        Dashboard
+      </button>
+
+      <button
+        class="tab"
+        onclick="showTab('orders', this)">
+        Orders
+      </button>
+
+      <button
+        class="tab"
+        onclick="showTab('products', this)">
+        Products
+      </button>
+
+    </div>
+
+
+    <!-- DASHBOARD -->
+
+    <section id="dashboard" class="section active">
+
+      <div class="card">
+
+        <h2>Welcome to Asif Store Admin</h2>
+
+        <p>
+          Manage products, orders and sales from this dashboard.
+        </p>
+
+        <button
+          class="small-btn refresh"
+          onclick="loadDashboard()">
+          Refresh Dashboard
+        </button>
+
+      </div>
+
+    </section>
+
+
+    <!-- ORDERS -->
+
+    <section id="orders" class="section">
+
+      <button
+        class="small-btn refresh"
+        onclick="loadOrders()">
+        Refresh Orders
+      </button>
+
+      <div id="ordersList">
+        <div class="loading">
+          Loading orders...
+        </div>
+      </div>
+
+    </section>
+
+
+    <!-- PRODUCTS -->
+
+    <section id="products" class="section">
+
+      <div class="card">
+
+        <h2 id="productFormTitle">
+          Add New Product
+        </h2>
+
+        <br>
+
+        <form id="productForm" class="product-form">
+
+          <input
+            class="input"
+            id="productName"
+            placeholder="Product Name"
+            required
+          >
+
+          <input
+            class="input"
+            id="productPrice"
+            type="number"
+            min="0"
+            placeholder="Price"
+            required
+          >
+
+          <input
+            class="input"
+            id="productImage"
+            placeholder="Image URL"
+          >
+
+          <input
+            class="input"
+            id="productStock"
+            type="number"
+            min="0"
+            placeholder="Stock"
+            value="0"
+          >
+
+          <textarea
+            class="input"
+            id="productDescription"
+            placeholder="Product Description"
+          ></textarea>
+
+          <button
+            class="primary-btn"
+            type="submit">
+            Save Product
+          </button>
+
+        </form>
+
+        <button
+          id="cancelEdit"
+          class="small-btn"
+          style="display:none;background:#64748b"
+          onclick="cancelEdit()">
+          Cancel Edit
+        </button>
+
+        <div id="productMessage"></div>
+
+      </div>
+
+
+      <h2 style="margin-bottom:15px">
+        All Products
+      </h2>
+
+      <div id="productsList" class="products-grid">
+        <div class="loading">
+          Loading products...
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+</div>
+
+
 <script>
+
+let editingProductId = null;
+
+
+/* API HELPER */
+
+async function api(url, options = {}) {
+
+  const response = await fetch(url, {
+    credentials: "include",
+    ...options
+  });
+
+  let data = {};
+
+  try {
+    data = await response.json();
+  } catch (e) {}
+
+  if (response.status === 401) {
+    showLogin();
+    throw new Error("Please login again");
+  }
+
+  if (!response.ok || data.success === false) {
+    throw new Error(data.error || "Request failed");
+  }
+
+  return data;
+}
+
+
+/* LOGIN CHECK */
+
+async function checkLogin() {
+
+  try {
+
+    const data = await fetch("/api/admin/me", {
+      credentials: "include"
+    }).then(r => r.json());
+
+    if (data.loggedIn) {
+      showAdmin();
+    } else {
+      showLogin();
+    }
+
+  } catch (error) {
+    showLogin();
+  }
+
+}
+
+
+/* LOGIN */
+
+document
+  .getElementById("loginForm")
+  .addEventListener("submit", async function(e) {
+
+    e.preventDefault();
+
+    const username =
+      document.getElementById("username").value.trim();
+
+    const password =
+      document.getElementById("password").value;
+
+    const errorBox =
+      document.getElementById("loginError");
+
+    errorBox.textContent = "Logging in...";
+
+    try {
+
+      const response = await fetch("/api/admin/login", {
+
+        method: "POST",
+
+        credentials: "include",
+
+        headers: {
+          "Content-Type": "application/json"
+        },
+
+        body: JSON.stringify({
+          username,
+          password
+        })
+
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || "Login failed");
+      }
+
+      errorBox.textContent = "";
+
+      document.getElementById("password").value = "";
+
+      showAdmin();
+
+    } catch (error) {
+
+      errorBox.textContent =
+        error.message || "Login failed";
+
+    }
+
+  });
+
+
+/* SHOW LOGIN */
+
+function showLogin() {
+
+  document.getElementById("loginPage").style.display =
+    "flex";
+
+  document.getElementById("adminPage").style.display =
+    "none";
+
+}
+
+
+/* SHOW ADMIN */
+
+function showAdmin() {
+
+  document.getElementById("loginPage").style.display =
+    "none";
+
+  document.getElementById("adminPage").style.display =
+    "block";
+
+  loadDashboard();
+  loadOrders();
+  loadProducts();
+
+}
+
+
+/* LOGOUT */
+
+async function logout() {
+
+  try {
+
+    await fetch("/api/admin/logout", {
+      method: "POST",
+      credentials: "include"
+    });
+
+  } catch (error) {}
+
+  showLogin();
+
+}
+
+
+/* DASHBOARD */
+
+async function loadDashboard() {
+
+  try {
+
+    const data =
+      await api("/api/admin/dashboard");
+
+    const d = data.dashboard;
+
+    document.getElementById("statProducts").textContent =
+      d.totalProducts;
+
+    document.getElementById("statOrders").textContent =
+      d.totalOrders;
+
+    document.getElementById("statPending").textContent =
+      d.pendingOrders;
+
+    document.getElementById("statSales").textContent =
+      "Rs. " + Number(d.totalSales || 0).toLocaleString();
+
+    document.getElementById("statToday").textContent =
+      "Rs. " + Number(d.todaySales || 0).toLocaleString();
+
+  } catch (error) {
+
+    console.error(error);
+
+  }
+
+}
+
+
+/* ORDERS */
 
 async function loadOrders() {
 
-  const ordersBox = document.getElementById("orders");
+  const box =
+    document.getElementById("ordersList");
 
-  ordersBox.innerHTML = `
+  box.innerHTML = `
     <div class="loading">
       Loading orders...
     </div>
@@ -149,20 +830,15 @@ async function loadOrders() {
 
   try {
 
-    const response = await fetch("/api/orders");
+    const data =
+      await api("/api/admin/orders");
 
-    const data = await response.json();
+    const orders =
+      data.orders || [];
 
-    if (!data.success) {
-      throw new Error(data.error || "Unable to load orders");
-    }
+    if (!orders.length) {
 
-    document.getElementById("totalOrders").textContent =
-      data.orders.length;
-
-    if (data.orders.length === 0) {
-
-      ordersBox.innerHTML = `
+      box.innerHTML = `
         <div class="empty">
           No orders found.
         </div>
@@ -171,69 +847,389 @@ async function loadOrders() {
       return;
     }
 
-    ordersBox.innerHTML = data.orders.map(order => `
+    box.innerHTML =
+      orders.map(order => {
 
-      <div class="order">
+        const status =
+          order.status || "New Order";
 
-        <h3>Order: ${escapeHtml(order.order_number)}</h3>
+        return `
 
-        <p>
-          <strong>Name:</strong>
-          ${escapeHtml(order.customer_name)}
-        </p>
+          <div class="card">
 
-        <p>
-          <strong>Phone:</strong>
-          ${escapeHtml(order.customer_phone)}
-        </p>
+            <h3>
+              Order:
+              ${escapeHtml(order.order_number)}
+            </h3>
 
-        <p>
-          <strong>Address:</strong>
-          ${escapeHtml(order.customer_address)}
-        </p>
+            <p>
+              <strong>Name:</strong>
+              ${escapeHtml(order.customer_name)}
+            </p>
 
-        <p>
-          <strong>Date:</strong>
-          ${escapeHtml(order.created_at)}
-        </p>
+            <p>
+              <strong>Phone:</strong>
+              ${escapeHtml(order.customer_phone)}
+            </p>
 
-        <p class="total">
-          Total: Rs. ${Number(order.total).toLocaleString()}
-        </p>
+            <p>
+              <strong>Address:</strong>
+              ${escapeHtml(order.customer_address)}
+            </p>
 
-        <span class="status">
-          New Order
-        </span>
+            <p>
+              <strong>Date:</strong>
+              ${escapeHtml(order.created_at)}
+            </p>
 
-      </div>
+            <p class="total">
+              Total:
+              Rs. ${Number(order.total || 0).toLocaleString()}
+            </p>
 
-    `).join("");
+            <div class="order-actions">
+
+              <select
+                class="status-select"
+                id="status-${order.id}">
+
+                ${statusOption("New Order", status)}
+                ${statusOption("Confirmed", status)}
+                ${statusOption("Processing", status)}
+                ${statusOption("Shipped", status)}
+                ${statusOption("Delivered", status)}
+                ${statusOption("Cancelled", status)}
+
+              </select>
+
+              <button
+                class="small-btn"
+                onclick="updateOrderStatus(${order.id})">
+
+                Update Status
+
+              </button>
+
+            </div>
+
+          </div>
+
+        `;
+
+      }).join("");
 
   } catch (error) {
 
-    ordersBox.innerHTML = `
+    box.innerHTML = `
       <div class="error">
-        Error: ${escapeHtml(error.message)}
+        ${escapeHtml(error.message)}
       </div>
     `;
 
   }
-}
-
-function escapeHtml(value) {
-
-  return String(value ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
 
 }
 
-loadOrders();
 
-</script>
+function statusOption(value, current) {
 
-</body>
-</html>
+  return `
+    <option
+      value="${value}"
+      ${value === current ? "selected" : ""}>
+      ${value}
+    </option>
+  `;
+
+}
+
+
+/* UPDATE ORDER STATUS */
+
+async function updateOrderStatus(id) {
+
+  const select =
+    document.getElementById("status-" + id);
+
+  const status =
+    select.value;
+
+  try {
+
+    await api(
+      "/api/admin/orders/" + id + "/status",
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          status
+        })
+      }
+    );
+
+    alert("Order status updated");
+
+    loadOrders();
+    loadDashboard();
+
+  } catch (error) {
+
+    alert(error.message);
+
+  }
+
+}
+
+
+/* PRODUCTS */
+
+async function loadProducts() {
+
+  const box =
+    document.getElementById("productsList");
+
+  box.innerHTML = `
+    <div class="loading">
+      Loading products...
+    </div>
+  `;
+
+  try {
+
+    const data =
+      await api("/api/products");
+
+    const products =
+      data.products || [];
+
+    if (!products.length) {
+
+      box.innerHTML = `
+        <div class="empty">
+          No products yet. Add your first product above.
+        </div>
+      `;
+
+      return;
+    }
+
+    box.innerHTML =
+      products.map(product => `
+
+        <div class="product-card">
+
+          <img
+            src="${escapeHtml(product.image || "")}"
+            alt="${escapeHtml(product.name)}"
+            onerror="this.style.display='none'"
+          >
+
+          <div class="product-info">
+
+            <h3>
+              ${escapeHtml(product.name)}
+            </h3>
+
+            <div class="product-price">
+              Rs. ${Number(product.price || 0).toLocaleString()}
+            </div>
+
+            <p>
+              Stock:
+              ${Number(product.stock || 0)}
+            </p>
+
+            <p>
+              ${escapeHtml(product.description || "")}
+            </p>
+
+            <div class="product-buttons">
+
+              <button
+                class="small-btn"
+                onclick="editProduct(${product.id})">
+                Edit
+              </button>
+
+              <button
+                class="small-btn delete-btn"
+                onclick="deleteProduct(${product.id})">
+                Delete
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      `).join("");
+
+  } catch (error) {
+
+    box.innerHTML = `
+      <div class="error">
+        ${escapeHtml(error.message)}
+      </div>
+    `;
+
+  }
+
+}
+
+
+/* ADD / EDIT PRODUCT */
+
+document
+  .getElementById("productForm")
+  .addEventListener("submit", async function(e) {
+
+    e.preventDefault();
+
+    const product = {
+
+      name:
+        document.getElementById("productName").value.trim(),
+
+      price:
+        Number(document.getElementById("productPrice").value),
+
+      image:
+        document.getElementById("productImage").value.trim(),
+
+      description:
+        document.getElementById("productDescription").value.trim(),
+
+      stock:
+        Number(document.getElementById("productStock").value || 0)
+
+    };
+
+    const message =
+      document.getElementById("productMessage");
+
+    message.className = "";
+    message.textContent = "Saving...";
+
+    try {
+
+      if (editingProductId) {
+
+        await api(
+          "/api/admin/products/" + editingProductId,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify(product)
+          }
+        );
+
+        message.className = "success";
+        message.textContent =
+          "Product updated successfully.";
+
+      } else {
+
+        await api(
+          "/api/admin/products",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify(product)
+          }
+        );
+
+        message.className = "success";
+        message.textContent =
+          "Product added successfully.";
+
+      }
+
+      resetProductForm();
+
+      loadProducts();
+      loadDashboard();
+
+    } catch (error) {
+
+      message.className = "error";
+      message.textContent =
+        error.message;
+
+    }
+
+  });
+
+
+/* EDIT PRODUCT */
+
+async function editProduct(id) {
+
+  try {
+
+    const data =
+      await api("/api/products/" + id);
+
+    const product =
+      data.product;
+
+    editingProductId = id;
+
+    document.getElementById("productFormTitle").textContent =
+      "Edit Product";
+
+    document.getElementById("productName").value =
+      product.name || "";
+
+    document.getElementById("productPrice").value =
+      product.price || 0;
+
+    document.getElementById("productImage").value =
+      product.image || "";
+
+    document.getElementById("productDescription").value =
+      product.description || "";
+
+    document.getElementById("productStock").value =
+      product.stock || 0;
+
+    document.getElementById("cancelEdit").style.display =
+      "inline-block";
+
+    document
+      .getElementById("products")
+      ?.scrollIntoView();
+
+  } catch (error) {
+
+    alert(error.message);
+
+  }
+
+}
+
+
+/* DELETE PRODUCT */
+
+async function deleteProduct(id) {
+
+  if (!confirm("Delete this product?")) {
+    return;
+  }
+
+  try {
+
+    await api(
+      "/api/admin/products/" + id,
+      {
+        method: "DELETE"
+      }
+    );
+
+    alert("Product del
