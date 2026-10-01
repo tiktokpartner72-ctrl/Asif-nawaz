@@ -937,18 +937,14 @@ export default {
     // ADMIN DASHBOARD
     // ================================
 
-    if (
-      url.pathname ===
-        "/api/admin/dashboard" &&
+        if (
+      url.pathname === "/api/admin/dashboard" &&
       request.method === "GET"
     ) {
-      if (
-        !(await requireAdmin())
-      ) {
+      if (!(await requireAdmin())) {
         return json({
           success: false,
-          message:
-            "Unauthorized"
+          error: "Unauthorized"
         }, 401);
       }
 
@@ -980,10 +976,7 @@ export default {
         const sales =
           await env.DB.prepare(`
             SELECT
-              COALESCE(
-                SUM(total),
-                0
-              ) AS total
+              COALESCE(SUM(total), 0) AS total
             FROM orders
             WHERE status != 'Cancelled'
           `).first();
@@ -991,30 +984,29 @@ export default {
         const todaySales =
           await env.DB.prepare(`
             SELECT
-              COALESCE(
-                SUM(total),
-                0
-        )
+              COALESCE(SUM(total), 0) AS total
+            FROM orders
+            WHERE status != 'Cancelled'
+            AND date(created_at) = date('now')
+          `).first();
+
+        return json({
+          success: true,
+          dashboard: {
+            totalProducts: Number(products?.total || 0),
+            totalOrders: Number(orders?.total || 0),
+            pendingOrders: Number(pending?.total || 0),
+            totalSales: Number(sales?.total || 0),
+            todaySales: Number(todaySales?.total || 0)
           }
         });
 
-      } catch {
+      } catch (error) {
+
         return json({
           success: false,
-          message:
-            "Dashboard data unavailable"
+          error: "Dashboard data unavailable"
         }, 500);
+
       }
-    }
-
-    // ================================
-    // DEFAULT
-    // ================================
-
-    return json({
-      success: true,
-      message:
-        "Asif Store Backend is working!"
-    });
-  }
-};
+        }
