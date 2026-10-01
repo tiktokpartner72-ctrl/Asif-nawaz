@@ -1232,4 +1232,122 @@ async function deleteProduct(id) {
       }
     );
 
-    alert("Product del
+    alert("Product deleted successfully.");
+
+loadProducts();
+loadDashboard();
+
+} catch (error) {
+
+alert(error.message);
+
+}
+
+}Product deleted successfully.");
+
+    loadProducts();
+    loadDashboard();
+
+  } catch (error) {
+
+    alert(error.message);
+
+  }
+
+}
+
+
+/* CANCEL EDIT */
+
+function cancelEdit() {
+
+  editingProductId = null;
+
+  document.getElementById("productFormTitle").textContent =
+    "Add New Product";
+
+  document.getElementById("productForm").reset();
+
+  document.getElementById("productStock").value = 0;
+
+  document.getElementById("cancelEdit").style.display =
+    "none";
+
+  document.getElementById("productMessage").textContent = "";
+
+}
+
+
+/* RESET PRODUCT FORM */
+
+function resetProductForm() {
+
+  editingProductId = null;
+
+  document.getElementById("productForm").reset();
+
+  document.getElementById("productStock").value = 0;
+
+  document.getElementById("productFormTitle").textContent =
+    "Add New Product";
+
+  document.getElementById("cancelEdit").style.display =
+    "none";
+
+}
+
+
+/* TABS */
+
+function showTab(tabName, button) {
+
+  document
+    .querySelectorAll(".section")
+    .forEach(section => {
+      section.classList.remove("active");
+    });
+
+  document
+    .querySelectorAll(".tab")
+    .forEach(tab => {
+      tab.classList.remove("active");
+    });
+
+  const section =
+    document.getElementById(tabName);
+
+  if (section) {
+    section.classList.add("active");
+  }
+
+  if (button) {
+    button.classList.add("active");
+  }
+
+}
+
+
+/* HTML ESCAPE */
+
+function escapeHtml(value) {
+
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+
+}
+
+
+/* START */
+
+checkLogin();
+
+</script>
+
+</body>
+</html>
+          
+          
