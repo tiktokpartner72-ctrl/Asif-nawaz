@@ -2,9 +2,6 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
-    // --------------------------------------------------
-    // CORS
-    // --------------------------------------------------
     const corsHeaders = {
       "Access-Control-Allow-Origin": url.origin,
       "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
@@ -20,15 +17,19 @@ export default {
       });
     }
 
-    const json = (data, status = 200) =>
+    const json = (data, status = 200, extraHeaders = {}) =>
       new Response(JSON.stringify(data), {
         status,
-        headers: corsHeaders
+        headers: {
+          ...corsHeaders,
+          ...extraHeaders
+        }
       });
 
-    // --------------------------------------------------
+    // ================================
     // DATABASE SETUP
-    // --------------------------------------------------
+    // ================================
+
     async function setupDatabase() {
       await env.DB.prepare(`
         CREATE TABLE IF NOT EXISTS products (
@@ -42,7 +43,6 @@ export default {
         )
       `).run();
 
-      // Add order status if old orders table doesn't have it
       try {
         await env.DB.prepare(
           "SELECT status FROM orders LIMIT 1"
@@ -54,12 +54,11 @@ export default {
             ADD COLUMN status TEXT DEFAULT 'New Order'
           `).run();
         } catch (alterError) {
-          // Ignore if column was created by another request
+          // Status column may already exist
         }
       }
     }
 
-    // Make sure required tables/columns exist
     try {
       await setupDatabase();
     } catch (error) {
@@ -69,24 +68,26 @@ export default {
       }, 500);
     }
 
-    // --------------------------------------------------
-    // PASSWORD / AUTH HELPERS
-    // --------------------------------------------------
+    // ================================
+    // ADMIN AUTH
+    // ================================
 
     const ADMIN_USERNAME = "admin";
 
     function getCookie(name) {
       const cookie = request.headers.get("Cookie") || "";
 
-      const parts = cookie.split(";");
-
-      for (const part of parts) {
+      for (const part of cookie.split(";")) {
         const item = part.trim();
 
         if (item.startsWith(name + "=")) {
-          return decodeURIComponent(
-            item.substring(name.length + 1)
-          );
+          try {
+            return decodeURIComponent(
+              item.substring(name.length + 1)
+            );
+          } catch {
+            return item.substring(name.length + 1);
+          }
         }
       }
 
@@ -107,10 +108,8 @@ export default {
     }
 
     function base64urlString(str) {
-      return btoa(unescape(encodeURIComponent(str)))
-        .replace(/\+/g, "-")
-        .replace(/\//g, "_")
-        .replace(/=+$/, "");
+      const bytes = new TextEncoder().encode(str);
+      return base64url(bytes);
     }
 
     function decodeBase64url(str) {
@@ -122,16 +121,23 @@ export default {
         str += "=";
       }
 
-      return decodeURIComponent(
-        escape(atob(str))
+      const binary = atob(str);
+
+      const bytes = Uint8Array.from(
+        binary,
+        c => c.charCodeAt(0)
       );
+
+      return new TextDecoder().decode(bytes);
     }
 
     async function createSignature(value) {
       const secret = env.ADMIN_PASSWORD;
 
       if (!secret) {
-        throw new Error("ADMIN_PASSWORD secret is missing");
+        throw new Error(
+          "ADMIN_PASSWORD secret is missing"
+        );
       }
 
       const key = await crypto.subtle.importKey(
@@ -145,32 +151,40 @@ export default {
         ["sign"]
       );
 
-      const signature = await crypto.subtle.sign(
-        "HMAC",
-        key,
-        new TextEncoder().encode(value)
-      );
+      const signature =
+        await crypto.subtle.sign(
+          "HMAC",
+          key,
+          new TextEncoder().encode(value)
+        );
 
-      return base64url(new Uint8Array(signature));
+      return base64url(
+        new Uint8Array(signature)
+      );
     }
 
     async function createSession() {
       const payload = {
         username: ADMIN_USERNAME,
-        expires: Date.now() + (12 * 60 * 60 * 1000)
+        expires:
+          Date.now() +
+          12 * 60 * 60 * 1000
       };
 
-      const value = base64urlString(
-        JSON.stringify(payload)
-      );
+      const value =
+        base64urlString(
+          JSON.stringify(payload)
+        );
 
-      const signature = await createSignature(value);
+      const signature =
+        await createSignature(value);
 
       return value + "." + signature;
     }
 
     async function verifySession() {
-      const session = getCookie("asif_admin_session");
+      const session =
+        getCookie("asif_admin_session");
 
       if (!session) {
         return false;
@@ -185,27 +199,34 @@ export default {
       const value = parts[0];
       const suppliedSignature = parts[1];
 
-      const expectedSignature =
-        await createSignature(value);
-
-      if (suppliedSignature !== expectedSignature) {
-        return false;
-      }
-
       try {
-        const payload = JSON.parse(
-          decodeBase64url(value)
-        );
+        const expectedSignature =
+          await createSignature(value);
 
         if (
-          payload.username !== ADMIN_USERNAME ||
-          Number(payload.expires) < Date.now()
+          suppliedSignature !==
+          expectedSignature
+        ) {
+          return false;
+        }
+
+        const payload =
+          JSON.parse(
+            decodeBase64url(value)
+          );
+
+        if (
+          payload.username !==
+            ADMIN_USERNAME ||
+          Number(payload.expires) <
+            Date.now()
         ) {
           return false;
         }
 
         return true;
-      } catch (error) {
+
+      } catch {
         return false;
       }
     }
@@ -214,151 +235,183 @@ export default {
       return await verifySession();
     }
 
-    // --------------------------------------------------
+    // ================================
     // BASIC TEST
-    // --------------------------------------------------
+    // ================================
 
     if (url.pathname === "/api/test") {
       return json({
         success: true,
-        message: "Asif Store Backend is working!"
+        message:
+          "Asif Store Backend is working!"
       });
     }
 
-    // --------------------------------------------------
+    // ================================
     // ADMIN LOGIN
-    // --------------------------------------------------
+    // ================================
 
     if (
-      url.pathname === "/api/admin/login" &&
+      url.pathname ===
+        "/api/admin/login" &&
       request.method === "POST"
     ) {
       try {
-        const data = await request.json();
+        const data =
+          await request.json();
 
         const username =
-          String(data.username || "").trim();
+          String(
+            data.username || ""
+          ).trim();
 
         const password =
-          String(data.password || "");
+          String(
+            data.password || ""
+          );
 
         if (
-          username !== ADMIN_USERNAME ||
+          username !==
+            ADMIN_USERNAME ||
           !env.ADMIN_PASSWORD ||
-          password !== env.ADMIN_PASSWORD
+          password !==
+            env.ADMIN_PASSWORD
         ) {
           return json({
             success: false,
-            message: "Invalid username or password"
+            message:
+              "Invalid username or password"
           }, 401);
         }
 
-        const session = await createSession();
+        const session =
+          await createSession();
 
-        return new Response(
-          JSON.stringify({
-            success: true,
-            message: "Login successful"
-          }),
+        return json(
           {
-            status: 200,
-            headers: {
-              ...corsHeaders,
-              "Set-Cookie":
-                `asif_admin_session=${encodeURIComponent(session)}; ` +
-                `HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=43200`
-            }
+            success: true,
+            message:
+              "Login successful"
+          },
+          200,
+          {
+            "Set-Cookie":
+              `asif_admin_session=${encodeURIComponent(session)}; ` +
+              `HttpOnly; Secure; SameSite=Lax; ` +
+              `Path=/; Max-Age=43200`,
+
+            "Cache-Control":
+              "no-store"
           }
         );
 
-      } catch (error) {
+      } catch {
         return json({
           success: false,
-          message: "Login failed"
+          message:
+            "Login failed"
         }, 500);
       }
     }
 
-    // --------------------------------------------------
+    // ================================
     // ADMIN LOGOUT
-    // --------------------------------------------------
+    // ================================
 
     if (
-      url.pathname === "/api/admin/logout" &&
+      url.pathname ===
+        "/api/admin/logout" &&
       request.method === "POST"
     ) {
-      return new Response(
-        JSON.stringify({
-          success: true
-        }),
+      return json(
         {
-          status: 200,
-          headers: {
-            ...corsHeaders,
-            "Set-Cookie":
-              "asif_admin_session=; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=0"
-          }
+          success: true
+        },
+        200,
+        {
+          "Set-Cookie":
+            "asif_admin_session=; " +
+            "HttpOnly; Secure; SameSite=Lax; " +
+            "Path=/; Max-Age=0",
+
+          "Cache-Control":
+            "no-store"
         }
       );
     }
 
-    // --------------------------------------------------
+    // ================================
     // CHECK LOGIN
-    // --------------------------------------------------
+    // ================================
 
     if (
-      url.pathname === "/api/admin/me" &&
+      url.pathname ===
+        "/api/admin/me" &&
       request.method === "GET"
     ) {
-      const loggedIn = await verifySession();
+      const loggedIn =
+        await verifySession();
 
-      return json({
-        success: true,
-        loggedIn
-      });
+      return json(
+        {
+          success: true,
+          loggedIn
+        },
+        200,
+        {
+          "Cache-Control":
+            "no-store"
+        }
+      );
     }
 
-    // --------------------------------------------------
+    // ================================
     // PUBLIC PRODUCTS
-    // --------------------------------------------------
+    // ================================
 
     if (
-      url.pathname === "/api/products" &&
+      url.pathname ===
+        "/api/products" &&
       request.method === "GET"
     ) {
       try {
-        const result = await env.DB.prepare(`
-          SELECT
-            id,
-            name,
-            price,
-            image,
-            description,
-            stock,
-            created_at
-          FROM products
-          ORDER BY id DESC
-        `).all();
+        const result =
+          await env.DB.prepare(`
+            SELECT
+              id,
+              name,
+              price,
+              image,
+              description,
+              stock,
+              created_at
+            FROM products
+            ORDER BY id DESC
+          `).all();
 
         return json({
           success: true,
-          products: result.results || []
+          products:
+            result.results || []
         });
 
-      } catch (error) {
+      } catch {
         return json({
           success: false,
-          error: "Unable to load products"
+          error:
+            "Unable to load products"
         }, 500);
       }
     }
 
-    // --------------------------------------------------
+    // ================================
     // SINGLE PRODUCT
-    // --------------------------------------------------
+    // ================================
 
     const productMatch =
-      url.pathname.match(/^\/api\/products\/(\d+)$/);
+      url.pathname.match(
+        /^\/api\/products\/(\d+)$/
+      );
 
     if (
       productMatch &&
@@ -387,7 +440,8 @@ export default {
         if (!product) {
           return json({
             success: false,
-            message: "Product not found"
+            message:
+              "Product not found"
           }, 404);
         }
 
@@ -396,33 +450,42 @@ export default {
           product
         });
 
-      } catch (error) {
+      } catch {
         return json({
           success: false,
-          error: "Unable to load product"
+          error:
+            "Unable to load product"
         }, 500);
       }
     }
 
-    // --------------------------------------------------
+    // ================================
     // CUSTOMER ORDER
-    // --------------------------------------------------
+    // ================================
 
     if (
-      url.pathname === "/api/order" &&
+      url.pathname ===
+        "/api/order" &&
       request.method === "POST"
     ) {
       try {
-        const data = await request.json();
+        const data =
+          await request.json();
 
         const name =
-          String(data.name || "").trim();
+          String(
+            data.name || ""
+          ).trim();
 
         const phone =
-          String(data.phone || "").trim();
+          String(
+            data.phone || ""
+          ).trim();
 
         const address =
-          String(data.address || "").trim();
+          String(
+            data.address || ""
+          ).trim();
 
         const items =
           Array.isArray(data.items)
@@ -430,9 +493,15 @@ export default {
             : [];
 
         const total =
-          Number(data.total || 0);
+          Number(
+            data.total || 0
+          );
 
-        if (!name || !phone || !address) {
+        if (
+          !name ||
+          !phone ||
+          !address
+        ) {
           return json({
             success: false,
             message:
@@ -444,8 +513,7 @@ export default {
           "ASIF-" + Date.now();
 
         await env.DB.prepare(`
-          INSERT INTO orders
-          (
+          INSERT INTO orders (
             order_number,
             customer_name,
             customer_phone,
@@ -474,61 +542,69 @@ export default {
             "Order saved successfully!"
         });
 
-      } catch (error) {
+      } catch {
         return json({
           success: false,
-          message: "Order save failed"
+          message:
+            "Order save failed"
         }, 500);
       }
     }
 
-    // --------------------------------------------------
+    // ================================
     // ADMIN ORDERS
-    // --------------------------------------------------
+    // ================================
 
     if (
-      url.pathname === "/api/admin/orders" &&
+      url.pathname ===
+        "/api/admin/orders" &&
       request.method === "GET"
     ) {
-      if (!(await requireAdmin())) {
+      if (
+        !(await requireAdmin())
+      ) {
         return json({
           success: false,
-          message: "Unauthorized"
+          message:
+            "Unauthorized"
         }, 401);
       }
 
       try {
-        const result = await env.DB.prepare(`
-          SELECT
-            id,
-            order_number,
-            customer_name,
-            customer_phone,
-            customer_address,
-            items,
-            total,
-            status,
-            created_at
-          FROM orders
-          ORDER BY id DESC
-        `).all();
+        const result =
+          await env.DB.prepare(`
+            SELECT
+              id,
+              order_number,
+              customer_name,
+              customer_phone,
+              customer_address,
+              items,
+              total,
+              status,
+              created_at
+            FROM orders
+            ORDER BY id DESC
+          `).all();
 
         return json({
           success: true,
-          orders: result.results || []
+          orders:
+            result.results || []
         });
 
-      } catch (error) {
+      } catch {
         return json({
           success: false,
-          error: "Unable to load orders"
+          error:
+            "Unable to load orders"
         }, 500);
       }
     }
 
-    // --------------------------------------------------
-    // ADMIN UPDATE ORDER STATUS
-    // --------------------------------------------------
+    // ================================
+    // UPDATE ORDER STATUS
+    // ================================
 
     const orderStatusMatch =
       url.pathname.match(
@@ -539,18 +615,24 @@ export default {
       orderStatusMatch &&
       request.method === "PUT"
     ) {
-      if (!(await requireAdmin())) {
+      if (
+        !(await requireAdmin())
+      ) {
         return json({
           success: false,
-          message: "Unauthorized"
+          message:
+            "Unauthorized"
         }, 401);
       }
 
       const orderId =
-        Number(orderStatusMatch[1]);
+        Number(
+          orderStatusMatch[1]
+        );
 
       try {
-        const data = await request.json();
+        const data =
+          await request.json();
 
         const allowedStatuses = [
           "New Order",
@@ -562,12 +644,19 @@ export default {
         ];
 
         const status =
-          String(data.status || "");
+          String(
+            data.status || ""
+          );
 
-        if (!allowedStatuses.includes(status)) {
+        if (
+          !allowedStatuses.includes(
+            status
+          )
+        ) {
           return json({
             success: false,
-            message: "Invalid order status"
+            message:
+              "Invalid order status"
           }, 400);
         }
 
@@ -576,56 +665,79 @@ export default {
           SET status = ?
           WHERE id = ?
         `)
-        .bind(status, orderId)
+        .bind(
+          status,
+          orderId
+        )
         .run();
 
         return json({
           success: true,
-          message: "Order status updated"
+          message:
+            "Order status updated"
         });
 
-      } catch (error) {
+      } catch {
         return json({
           success: false,
-          message: "Status update failed"
+          message:
+            "Status update failed"
         }, 500);
       }
     }
 
-    // --------------------------------------------------
-    // ADMIN PRODUCTS - ADD
-    // --------------------------------------------------
+    // ================================
+    // ADD PRODUCT
+    // ================================
 
     if (
-      url.pathname === "/api/admin/products" &&
+      url.pathname ===
+        "/api/admin/products" &&
       request.method === "POST"
     ) {
-      if (!(await requireAdmin())) {
+      if (
+        !(await requireAdmin())
+      ) {
         return json({
           success: false,
-          message: "Unauthorized"
+          message:
+            "Unauthorized"
         }, 401);
       }
 
       try {
-        const data = await request.json();
+        const data =
+          await request.json();
 
         const name =
-          String(data.name || "").trim();
+          String(
+            data.name || ""
+          ).trim();
 
         const price =
-          Number(data.price || 0);
+          Number(
+            data.price || 0
+          );
 
         const image =
-          String(data.image || "").trim();
+          String(
+            data.image || ""
+          ).trim();
 
         const description =
-          String(data.description || "").trim();
+          String(
+            data.description || ""
+          ).trim();
 
         const stock =
-          Number(data.stock || 0);
+          Number(
+            data.stock || 0
+          );
 
-        if (!name || price < 0) {
+        if (
+          !name ||
+          price < 0
+        ) {
           return json({
             success: false,
             message:
@@ -656,21 +768,25 @@ export default {
 
         return json({
           success: true,
-          message: "Product added successfully",
-          id: result.meta?.last_row_id || null
+          message:
+            "Product added successfully",
+          id:
+            result.meta?.last_row_id ||
+            null
         });
 
-      } catch (error) {
+      } catch {
         return json({
           success: false,
-          message: "Product could not be added"
+          message:
+            "Product could not be added"
         }, 500);
       }
     }
 
-    // --------------------------------------------------
-    // ADMIN PRODUCTS - EDIT
-    // --------------------------------------------------
+    // ================================
+    // EDIT PRODUCT
+    // ================================
 
     const adminProductMatch =
       url.pathname.match(
@@ -681,33 +797,60 @@ export default {
       adminProductMatch &&
       request.method === "PUT"
     ) {
-      if (!(await requireAdmin())) {
+      if (
+        !(await requireAdmin())
+      ) {
         return json({
           success: false,
-          message: "Unauthorized"
+          message:
+            "Unauthorized"
         }, 401);
       }
 
       const productId =
-        Number(adminProductMatch[1]);
+        Number(
+          adminProductMatch[1]
+        );
 
       try {
-        const data = await request.json();
+        const data =
+          await request.json();
 
         const name =
-          String(data.name || "").trim();
+          String(
+            data.name || ""
+          ).trim();
 
         const price =
-          Number(data.price || 0);
+          Number(
+            data.price || 0
+          );
 
         const image =
-          String(data.image || "").trim();
+          String(
+            data.image || ""
+          ).trim();
 
         const description =
-          String(data.description || "").trim();
+          String(
+            data.description || ""
+          ).trim();
 
         const stock =
-          Number(data.stock || 0);
+          Number(
+            data.stock || 0
+          );
+
+        if (
+          !name ||
+          price < 0
+        ) {
+          return json({
+            success: false,
+            message:
+              "Product name and valid price are required"
+          }, 400);
+        }
 
         await env.DB.prepare(`
           UPDATE products
@@ -731,34 +874,41 @@ export default {
 
         return json({
           success: true,
-          message: "Product updated successfully"
+          message:
+            "Product updated successfully"
         });
 
-      } catch (error) {
+      } catch {
         return json({
           success: false,
-          message: "Product update failed"
+          message:
+            "Product update failed"
         }, 500);
       }
     }
 
-    // --------------------------------------------------
-    // ADMIN PRODUCTS - DELETE
-    // --------------------------------------------------
+    // ================================
+    // DELETE PRODUCT
+    // ================================
 
     if (
       adminProductMatch &&
       request.method === "DELETE"
     ) {
-      if (!(await requireAdmin())) {
+      if (
+        !(await requireAdmin())
+      ) {
         return json({
           success: false,
-          message: "Unauthorized"
+          message:
+            "Unauthorized"
         }, 401);
       }
 
       const productId =
-        Number(adminProductMatch[1]);
+        Number(
+          adminProductMatch[1]
+        );
 
       try {
         await env.DB.prepare(`
@@ -770,29 +920,35 @@ export default {
 
         return json({
           success: true,
-          message: "Product deleted successfully"
+          message:
+            "Product deleted successfully"
         });
 
-      } catch (error) {
+      } catch {
         return json({
           success: false,
-          message: "Product delete failed"
+          message:
+            "Product delete failed"
         }, 500);
       }
     }
 
-    // --------------------------------------------------
-    // ADMIN DASHBOARD / SALES
-    // --------------------------------------------------
+    // ================================
+    // ADMIN DASHBOARD
+    // ================================
 
     if (
-      url.pathname === "/api/admin/dashboard" &&
+      url.pathname ===
+        "/api/admin/dashboard" &&
       request.method === "GET"
     ) {
-      if (!(await requireAdmin())) {
+      if (
+        !(await requireAdmin())
+      ) {
         return json({
           success: false,
-          message: "Unauthorized"
+          message:
+            "Unauthorized"
         }, 401);
       }
 
@@ -823,54 +979,42 @@ export default {
 
         const sales =
           await env.DB.prepare(`
-            SELECT COALESCE(SUM(total), 0) AS total
+            SELECT
+              COALESCE(
+                SUM(total),
+                0
+              ) AS total
             FROM orders
             WHERE status != 'Cancelled'
           `).first();
 
         const todaySales =
           await env.DB.prepare(`
-            SELECT COALESCE(SUM(total), 0) AS total
-            FROM orders
-            WHERE status != 'Cancelled'
-            AND date(created_at) = date('now')
-          `).first();
-
-        return json({
-          success: true,
-          dashboard: {
-            totalProducts:
-              Number(products?.total || 0),
-
-            totalOrders:
-              Number(orders?.total || 0),
-
-            pendingOrders:
-              Number(pending?.total || 0),
-
-            totalSales:
-              Number(sales?.total || 0),
-
-            todaySales:
-              Number(todaySales?.total || 0)
+            SELECT
+              COALESCE(
+                SUM(total),
+                0
+        )
           }
         });
 
-      } catch (error) {
+      } catch {
         return json({
           success: false,
-          message: "Dashboard data unavailable"
+          message:
+            "Dashboard data unavailable"
         }, 500);
       }
     }
 
-    // --------------------------------------------------
+    // ================================
     // DEFAULT
-    // --------------------------------------------------
+    // ================================
 
     return json({
       success: true,
-      message: "Asif Store Backend is working!"
+      message:
+        "Asif Store Backend is working!"
     });
   }
 };
