@@ -1004,26 +1004,10 @@ export default {
           error: "Dashboard data unavailable"
         }, 500);
       }
-    }
-
-    return json({
-      success: true,
-      message: "Asif Store Backend is working!"
-    });
-  }
-};
-success: false,
-          error: "Dashboard data unavailable"
-        }, 500);
-
-      }
-        }
-      }
-    }
- 
+    } 
 return json({
       success: true,
-      message: "Asif Store Backend is working!"
+      message: "Asif Store Backend is warking!"
     });
   }
 };
