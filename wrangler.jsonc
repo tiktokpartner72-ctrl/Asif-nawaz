@@ -1,26 +1,19 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "asifstore",
+  "name": "asif-nawaz",
   "main": "./Server.js",
   "compatibility_date": "2026-09-28",
 
   "assets": {
     "directory": ".",
-    "binding": "ASSETS",
-    "exclude": [
-      "node_modules/**",
-      ".git/**",
-      "*.json",
-      "*.jsonc",
-      "Server.js"
-    ]
+    "binding": "ASSETS"
   },
 
   "d1_databases": [
     {
       "binding": "DB",
       "database_name": "asif-store-db",
-      "database_id": "0000000e-00000003-000050f5-650b89c0d785a99b97ca7449728340d9"
+      "database_id": "0000001f-00000000-000050f7-f579c0357e679849e6bdc754c597aa2f"
     }
   ]
 }
